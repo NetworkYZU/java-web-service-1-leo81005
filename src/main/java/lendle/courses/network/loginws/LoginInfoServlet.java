@@ -5,10 +5,18 @@
  */
 package lendle.courses.network.loginws;
 
+import com.google.gson.Gson;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
@@ -71,7 +79,26 @@ public class LoginInfoServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        getImpl1(request, response);
+        response.setContentType("application/json;charset=utf-8");
+        try (PrintWriter out=response.getWriter(); Connection conn=DriverManager.getConnection("jdbc:derby://localhost:1527/sample", "app", "app")){
+            String id = request.getParameter("id");
+            PreparedStatement stmt = conn.prepareStatement("select * from LOGIN where id=?");
+            stmt.setString(1, id);
+            Map map=new HashMap();
+            ResultSet rs = stmt.executeQuery();
+            if(rs.next()){
+                map.put("id", rs.getString("id"));
+                map.put("password", rs.getString("password"));
+            }
+            Gson gson = new Gson();
+            out.print(gson.toJson(map));
+        }catch(Exception e){
+            throw new ServletException(e);
+        }
+        
+        
+        
+        
     }
 
     @Override
@@ -94,8 +121,10 @@ public class LoginInfoServlet extends HttpServlet {
         try (PrintWriter out=response.getWriter(); Connection conn=DriverManager.getConnection("jdbc:derby://localhost:1527/sample", "app", "app")) {
             //delete the corresponding user
             String id=request.getParameter("id");
-            //////////////////////////////
-            out.println("success");
+            PreparedStatement stmt = conn.prepareStatement("delete from login where id=?");
+            stmt.setString(1, id);
+            int ret = stmt.executeUpdate(); 
+            out.println(ret);
         }catch(Exception e){
             throw new ServletException(e);
         }
