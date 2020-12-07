@@ -104,12 +104,18 @@ public class LoginInfoServlet extends HttpServlet {
     @Override
     protected void doPut(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         response.setContentType("text/plain;charset=UTF-8");
-        try (PrintWriter out=response.getWriter(); Connection conn=DriverManager.getConnection("jdbc:derby://localhost:1527/sample", "app", "app")) {
+        try (PrintWriter out=response.getWriter(); 
+                Connection conn=DriverManager.getConnection("jdbc:derby://localhost:1527/sample", "app", "app")) {
             //update the corresponding user
             String id=request.getParameter("id");
             String password=request.getParameter("password");
+            PreparedStatement stmt  = conn.prepareStatement("update LOGIN set PASSWORD=? where ID=?");
+            stmt.setString(2, id);
+            stmt.setString(1, password);
+            System.out.println(id+", "+password);
+            int ret = stmt.executeUpdate();
             //////////////////////////////
-            out.println("success");
+            out.println(ret);
         }catch(Exception e){
             throw new ServletException(e);
         }
@@ -118,7 +124,8 @@ public class LoginInfoServlet extends HttpServlet {
     @Override
     protected void doDelete(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         response.setContentType("text/plain;charset=UTF-8");
-        try (PrintWriter out=response.getWriter(); Connection conn=DriverManager.getConnection("jdbc:derby://localhost:1527/sample", "app", "app")) {
+        try (PrintWriter out=response.getWriter(); 
+                Connection conn=DriverManager.getConnection("jdbc:derby://localhost:1527/sample", "app", "app")) {
             //delete the corresponding user
             String id=request.getParameter("id");
             PreparedStatement stmt = conn.prepareStatement("delete from login where id=?");
@@ -133,11 +140,16 @@ public class LoginInfoServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         response.setContentType("text/plain;charset=UTF-8");
-        try (PrintWriter out=response.getWriter(); Connection conn=DriverManager.getConnection("jdbc:derby://localhost:1527/sample", "app", "app")) {
+        try (PrintWriter out=response.getWriter(); 
+                Connection conn=DriverManager.getConnection("jdbc:derby://localhost:1527/sample", "app", "app")) {
             //insert the corresponding user
             String id=request.getParameter("id");
             String password=request.getParameter("password");
             //////////////////////////////
+            PreparedStatement stmt = conn.prepareStatement("insert into login (id, password) values (?, ?)");
+            stmt.setString(1, id);
+            stmt.setString(2, password);
+            stmt.executeUpdate();
             out.println("success");
         }catch(Exception e){
             throw new ServletException(e);
